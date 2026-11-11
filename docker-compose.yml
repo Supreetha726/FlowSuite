@@ -1,0 +1,49 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: flowsuite-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: flowsuite
+      POSTGRES_PASSWORD: flowsuite_password
+      POSTGRES_DB: flowsuite_db
+    ports: ["5432:5432"]
+    volumes: ["flowsuite_postgres_data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flowsuite -d flowsuite_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  redis:
+    image: redis:7-alpine
+    container_name: flowsuite-redis
+    restart: unless-stopped
+    ports: ["6379:6379"]
+    volumes: ["flowsuite_redis_data:/data"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  api:
+    build: ./backend
+    container_name: flowsuite-api
+    restart: unless-stopped
+    env_file: ./backend/.env
+    environment:
+      DATABASE_URL: postgresql://flowsuite:flowsuite_password@postgres:5432/flowsuite_db?schema=public
+      REDIS_URL: redis://redis:6379
+      FRONTEND_URL: http://localhost:5173
+    ports: ["5000:5000"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+  web:
+    build: ./frontend
+    container_name: flowsuite-web
+    restart: unless-stopped
+    ports: ["5173:80"]
+    depends_on: [api]
+volumes:
+  flowsuite_postgres_data:
+  flowsuite_redis_data:

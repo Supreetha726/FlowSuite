@@ -1,0 +1,1 @@
+module.exports=(...roles)=>(req,res,next)=>{if(!req.membership||!roles.includes(req.membership.role))return res.status(403).json({success:false,code:'FORBIDDEN',message:'Your role cannot perform this action'});next()};

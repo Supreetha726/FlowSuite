@@ -1,0 +1,1 @@
+module.exports=(err,req,res,next)=>{console.error(err);const status=err.status||500;res.status(status).json({success:false,code:err.code||'INTERNAL_ERROR',message:status===500?'An unexpected server error occurred':err.message})};

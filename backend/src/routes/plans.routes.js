@@ -1,0 +1,1 @@
+const router=require('express').Router();const {prisma}=require('../config/database');const asyncHandler=require('../utils/asyncHandler');router.get('/',asyncHandler(async(req,res)=>{const data=await prisma.plan.findMany({include:{entitlements:{include:{entitlement:true}}},orderBy:{pricePaise:'asc'}});res.json({success:true,data})}));module.exports=router;
